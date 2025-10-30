@@ -1,9 +1,23 @@
 import React from 'react';
 import { TouchableOpacity, Text } from 'react-native';
 
-const AddButton = () => {
+const AddButton = ({ onPress }) => {
+  console.log('AddButton - onPress:', onPress);
+
+  const handlePress = () => {
+    console.log('Botón + presionado');
+    if (onPress) {
+      onPress();
+    } else {
+      console.log('ERROR: onPress no está definido');
+    }
+  };
+
   return (
-    <TouchableOpacity style={styles.addButton}>
+    <TouchableOpacity 
+      style={styles.addButton} 
+      onPress={handlePress}
+    >
       <Text style={styles.addButtonText}>+</Text>
     </TouchableOpacity>
   );

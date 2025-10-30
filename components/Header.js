@@ -2,12 +2,14 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import AddButton from './AddButton';
 
-const Header = ({ title }) => {
+const Header = ({ title, onAddPress }) => {
+  console.log('Header - onAddPress:', onAddPress);
+
   return (
     <View style={styles.header}>
       <View style={styles.headerContent}>
         <Text style={styles.headerTitle}>{title}</Text>
-        <AddButton/>
+        <AddButton onPress={onAddPress} />
       </View>
     </View>
   );
@@ -35,7 +37,7 @@ const styles = {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#333',
-    flex: 1, // Esto hace que el título ocupe el espacio disponible
+    flex: 1,
   },
 };
 
