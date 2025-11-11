@@ -5,14 +5,38 @@ import NewReportScreen from './screens/NewReportScreen';
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState('home');
+  const [reports, setReports] = useState([]);
+
+  const addReport = (newReport) => {
+    const reportWithId = {
+      ...newReport,
+      id: Date.now().toString(),
+      userName: 'Usuario Actual', 
+      time: 'Hace unos momentos',
+      likes: false,
+      comments: false,
+      shares: false
+    };
+    setReports(prevReports => [reportWithId, ...prevReports]);
+  };
 
   const renderScreen = () => {
     switch (currentScreen) {
       case 'newReport':
-        return <NewReportScreen onBack={() => setCurrentScreen('home')} />;
+        return (
+          <NewReportScreen 
+            onBack={() => setCurrentScreen('home')}
+            onAddReport={addReport}
+          />
+        );
       case 'home':
       default:
-        return <HomeScreen onAddReport={() => setCurrentScreen('newReport')} />;
+        return (
+          <HomeScreen 
+            onAddReport={() => setCurrentScreen('newReport')}
+            reports={reports}
+          />
+        );
     }
   };
 

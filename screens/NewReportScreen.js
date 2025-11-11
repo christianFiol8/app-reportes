@@ -1,7 +1,105 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, TextInput, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, Alert, Image } from 'react-native';
+import * as Location from 'expo-location';
+import * as ImagePicker from 'expo-image-picker';
 
-const NewReportScreen = ({ onBack }) => {
+const NewReportScreen = ({ onBack, onAddReport }) => {
+  const [location, setLocation] = useState(null);
+  const [locationAddress, setLocationAddress] = useState('Obteniendo ubicación...');
+  const [image, setImage] = useState(null);
+  const [description, setDescription] = useState('');
+
+  // Pedir permisos al cargar la pantalla
+  useEffect(() => {
+    requestPermissions();
+  }, []);
+
+  const requestPermissions = async () => {
+    // Pedir permiso de ubicación
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permiso denegado', 'Se necesita permiso de ubicación para usar esta función');
+      return;
+    }
+
+    // Pedir permiso de cámara
+    const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
+    if (cameraPermission.status !== 'granted') {
+      Alert.alert('Permiso denegado', 'Se necesita permiso de cámara para tomar fotos');
+    }
+
+    // Obtener ubicación inicial
+    getCurrentLocation();
+  };
+
+  const getCurrentLocation = async () => {
+    try {
+      let currentLocation = await Location.getCurrentPositionAsync({});
+      setLocation(currentLocation.coords);
+
+      // Obtener dirección a partir de las coordenadas
+      let address = await Location.reverseGeocodeAsync({
+        latitude: currentLocation.coords.latitude,
+        longitude: currentLocation.coords.longitude,
+      });
+
+      if (address.length > 0) {
+        const firstAddress = address[0];
+        const addressString = `${firstAddress.street || ''} ${firstAddress.streetNumber || ''}, ${firstAddress.city || ''}, ${firstAddress.region || ''}`.trim();
+        setLocationAddress(addressString || 'Ubicación obtenida');
+      }
+    } catch (error) {
+      console.log('Error obteniendo ubicación:', error);
+      setLocationAddress('Error obteniendo ubicación');
+    }
+  };
+
+  const takePicture = async () => {
+    try {
+      let result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled) {
+        setImage(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.log('Error tomando foto:', error);
+      Alert.alert('Error', 'No se pudo tomar la foto');
+    }
+  };
+
+  const handleSubmit = () => {
+    if (!description.trim()) {
+      Alert.alert('Error', 'Por favor describe el problema');
+      return;
+    }
+
+    if (!location) {
+      Alert.alert('Error', 'No se pudo obtener la ubicación');
+      return;
+    }
+
+    if (!image) {
+      Alert.alert('Error', 'Por favor toma una foto del problema');
+      return;
+    }
+
+    const newReport = {
+      location: locationAddress,
+      coordinates: location,
+      imageUrl: image,
+      problem: description,
+    };
+
+    onAddReport(newReport);
+    Alert.alert('Éxito', 'Reporte enviado correctamente');
+    onBack();
+  };
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -17,10 +115,15 @@ const NewReportScreen = ({ onBack }) => {
         {/* Sección Ubicación */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Ubicación</Text>
-          <TouchableOpacity style={styles.locationButton}>
+          <TouchableOpacity style={styles.locationButton} onPress={getCurrentLocation}>
             <Text style={styles.locationButtonText}>Actualizar ubicación</Text>
           </TouchableOpacity>
-          <Text style={styles.locationText}>Stockton St 1-99, San Francisco, CA</Text>
+          <Text style={styles.locationText}>{locationAddress}</Text>
+          {location && (
+            <Text style={styles.coordinatesText}>
+              Coordenadas: {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
+            </Text>
+          )}
         </View>
 
         <View style={styles.separator} />
@@ -28,8 +131,12 @@ const NewReportScreen = ({ onBack }) => {
         {/* Sección Imagen */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Imagen</Text>
-          <TouchableOpacity style={styles.imageButton}>
-            <Text style={styles.imageButtonText}>Toca para agregar imagen</Text>
+          <TouchableOpacity style={styles.imageButton} onPress={takePicture}>
+            {image ? (
+              <Image source={{ uri: image }} style={styles.capturedImage} />
+            ) : (
+              <Text style={styles.imageButtonText}>Toca para agregar imagen</Text>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -43,11 +150,13 @@ const NewReportScreen = ({ onBack }) => {
             placeholder="Describe el problema que quieres reportar..."
             multiline
             numberOfLines={4}
+            value={description}
+            onChangeText={setDescription}
           />
         </View>
 
         {/* Botón Enviar */}
-        <TouchableOpacity style={styles.submitButton}>
+        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
           <Text style={styles.submitButtonText}>Enviar Reporte</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -113,6 +222,12 @@ const styles = {
     fontSize: 14,
     color: '#666',
     fontStyle: 'italic',
+    marginBottom: 5,
+  },
+  coordinatesText: {
+    fontSize: 12,
+    color: '#999',
+    fontStyle: 'italic',
   },
   separator: {
     height: 1,
@@ -123,15 +238,22 @@ const styles = {
     borderWidth: 2,
     borderColor: '#007AFF',
     borderStyle: 'dashed',
-    padding: 40,
+    padding: 20,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
+    minHeight: 150,
   },
   imageButtonText: {
     color: '#007AFF',
     fontSize: 16,
     fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  capturedImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 8,
   },
   descriptionInput: {
     borderWidth: 1,
