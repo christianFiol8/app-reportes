@@ -1,21 +1,38 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native'; 
 import AddButton from './AddButton';
 
 const Header = ({ title, onAddPress, onLogout }) => {
+
+  const confirmarSalida = () => {
+    Alert.alert(
+      "Cerrar Sesión", 
+      "¿Estás seguro que quieres salir de la aplicación?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel"
+        },
+        {
+          text: "Sí, Salir",
+          onPress: onLogout,
+          style: "destructive"
+        }
+      ]
+    );
+  };
+
   return (
     <View style={styles.header}>
       <Text style={styles.headerTitle} numberOfLines={1}>{title}</Text>
-      
       <View style={styles.actionsContainer}>
-        
         {onAddPress && (
           <View style={styles.actionWrapper}>
              <AddButton onPress={onAddPress} />
           </View>
         )}
         {onLogout && (
-            <TouchableOpacity onPress={onLogout} style={styles.logoutButton}>
+            <TouchableOpacity onPress={confirmarSalida} style={styles.logoutButton}>
                 <Text style={styles.logoutText}>Salir</Text>
             </TouchableOpacity>
         )}
@@ -27,8 +44,8 @@ const Header = ({ title, onAddPress, onLogout }) => {
 const styles = StyleSheet.create({
   header: {
     backgroundColor: '#ffffff',
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: 45,
     paddingBottom: 15,
@@ -45,8 +62,8 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1e88e5', 
-    flex: 1, 
+    color: '#1e88e5',
+    flex: 1,
     marginRight: 10,
   },
   actionsContainer: {
@@ -54,7 +71,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   actionWrapper: {
-    marginRight: 12, 
+    marginRight: 12,
   },
   logoutButton: {
     paddingVertical: 8,
