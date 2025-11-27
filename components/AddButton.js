@@ -1,15 +1,13 @@
 import React from 'react';
-import { TouchableOpacity, Text } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 
 const AddButton = ({ onPress }) => {
-  console.log('AddButton - onPress:', onPress);
-
   const handlePress = () => {
-    console.log('Botón + presionado');
+    // console.log('Botón + presionado');
     if (onPress) {
       onPress();
     } else {
-      console.log('ERROR: onPress no está definido');
+      // console.log('ERROR: onPress no está definido');
     }
   };
 
@@ -23,25 +21,26 @@ const AddButton = ({ onPress }) => {
   );
 };
 
-const styles = {
+const styles = StyleSheet.create({
   addButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#1e88e5', // Color de acento
     width: 40,
     height: 40,
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
+    elevation: 3,
+    shadowColor: '#1e88e5',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 3,
   },
   addButtonText: {
     color: '#FFFFFF',
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: 'bold',
+    lineHeight: 25, // Ajuste para centrado vertical en React Native
   },
-};
+});
 
 export default AddButton;

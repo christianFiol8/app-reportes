@@ -1,48 +1,96 @@
-import React, { useState } from 'react';
-import { SafeAreaView, StatusBar } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { SafeAreaView, StatusBar, Alert, View, ActivityIndicator } from 'react-native';
+
+import SplashScreen from './screens/SplashScreen'; 
+import AuthScreen from './screens/AuthScreen';
 import HomeScreen from './screens/HomeScreen';
 import NewReportScreen from './screens/NewReportScreen';
 
-export default function App() {
-  const [currentScreen, setCurrentScreen] = useState('home');
-  const [reports, setReports] = useState([]);
 
-  const addReport = (newReport) => {
-    const reportWithId = {
-      ...newReport,
-      id: Date.now().toString(),
-      userName: 'Usuario Actual', 
-      time: 'Hace unos momentos',
-      likes: false,
-      comments: false,
-      shares: false
-    };
-    setReports(prevReports => [reportWithId, ...prevReports]);
+import { loginUser, registerUser, getReports, createReport } from './components/api';
+
+export default function App() {
+  const [currentScreen, setCurrentScreen] = useState('splash');
+  const [user, setUser] = useState(null);
+  const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  
+  useEffect(() => {
+    setTimeout(() => setCurrentScreen('auth'), 2000);
+  }, []);
+
+
+  const refreshReports = async () => {
+    const data = await getReports();
+    setReports(data);
   };
 
+  const handleLogin = async (email, password) => {
+    setLoading(true);
+    try {
+      const userData = await loginUser(email, password);
+      setUser(userData);
+      await refreshReports();
+      setCurrentScreen('home');
+    } catch (error) {
+      Alert.alert('Error', 'Credenciales incorrectas');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRegister = async (name, email, password, city) => {
+    setLoading(true);
+    try {
+      await registerUser(name, email, password, city);
+      // Auto-login tras registro
+      const userData = await loginUser(email, password);
+      setUser(userData);
+      await refreshReports();
+      setCurrentScreen('home');
+    } catch (error) {
+      Alert.alert('Error', error.message || error.toString());
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateReport = async (newReportData) => {
+    try {
+      await createReport({
+        ...newReportData,
+        userId: user.id 
+      });
+      await refreshReports();
+      setCurrentScreen('home');
+    } catch (error) {
+      Alert.alert('Error', 'No se pudo enviar el reporte');
+    }
+  };
+
+
   const renderScreen = () => {
+    if (loading) return <View style={{flex:1, justifyContent:'center'}}><ActivityIndicator size="large" color="#1e88e5"/></View>;
+
     switch (currentScreen) {
-      case 'newReport':
-        return (
-          <NewReportScreen 
-            onBack={() => setCurrentScreen('home')}
-            onAddReport={addReport}
-          />
-        );
-      case 'home':
-      default:
-        return (
-          <HomeScreen 
+      case 'splash': return <SplashScreen />;
+      case 'auth': return <AuthScreen onLogin={handleLogin} onRegister={handleRegister} />;
+      case 'home': 
+        return <HomeScreen 
+            reports={reports} 
             onAddReport={() => setCurrentScreen('newReport')}
-            reports={reports}
-          />
-        );
+            onLogout={() => { setUser(null); setCurrentScreen('auth'); }}
+        />;
+      case 'newReport': 
+        return <NewReportScreen onBack={() => setCurrentScreen('home')} onAddReport={handleCreateReport} />;
+      default: return <SplashScreen />;
     }
   };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
       {renderScreen()}
     </SafeAreaView>
   );

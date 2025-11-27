@@ -1,60 +1,77 @@
 import React from 'react';
-import { ScrollView, View, Text } from 'react-native';
-import Header from '../components/Header';
+import { View, FlatList, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import ReportCard from '../components/ReportCard';
+import Header from '../components/Header'; 
 
-const HomeScreen = ({ onAddReport, reports }) => {
-  const initialReportData = [
-    {
-      id: 1,
-      userName: 'Ana García',
-      location: 'Centro de la ciudad',
-      time: 'Hace 2 horas',
-      problem: 'Problema con el alumbrado público en la calle principal',
-      imageUrl: 'https://via.placeholder.com/350x150?text=Imagen+del+reporte',
-      likes: false,
-      comments: true,
-      shares: false
-    },
-    {
-      id: 2,
-      userName: 'Carlos Mendoza',
-      location: 'Parque Central',
-      time: 'Hace 4 horas',
-      problem: 'Basura acumulada en los contenedores del parque',
-      imageUrl: 'https://via.placeholder.com/350x150?text=Imagen+del+reporte',
-      likes: false,
-      comments: true,
-      shares: false
-    }
-  ];
-
-  const displayReports = reports.length > 0 ? reports : initialReportData;
-
+const HomeScreen = ({ reports, onAddReport, onLogout }) => {
   return (
-    <>
+    <View style={styles.container}>
       <Header 
-        title="Feed de Reportes" 
-        onAddPress={onAddReport}
+        title="Reportes" 
+        onAddPress={onAddReport} 
+        onLogout={onLogout} 
       />
       
-      <ScrollView style={styles.scrollView}>
-        {displayReports.map(report => (
-          <ReportCard key={report.id} report={report} />
-        ))}
-        <View style={styles.spacer} />
-      </ScrollView>
-    </>
+      {reports.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>¡No hay reportes aún!</Text>
+          <Text style={styles.emptySubText}>Sé el primero en reportar algo.</Text>
+          <TouchableOpacity style={styles.reportButton} onPress={onAddReport}>
+            <Text style={styles.reportButtonText}>Crear Nuevo Reporte</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <FlatList
+          data={reports}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => <ReportCard report={item} />}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
+    </View>
   );
 };
 
-const styles = {
-  scrollView: {
+const styles = StyleSheet.create({
+  container: {
     flex: 1,
+    backgroundColor: '#f5f5f5',
   },
-  spacer: {
-    height: 20,
+  listContent: {
+    paddingTop: 30,
+    paddingBottom: 20,
   },
-};
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 30,
+  },
+  emptyText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 10,
+  },
+  emptySubText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 30,
+  },
+  reportButton: {
+    backgroundColor: '#1e88e5',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 10,
+    elevation: 3,
+  },
+  reportButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+});
 
 export default HomeScreen;
