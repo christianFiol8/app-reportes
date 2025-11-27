@@ -65,7 +65,6 @@ app.post('/reports', (req, res) => {
     });
 });
 
-// IMPORTANTE: '0.0.0.0' permite conexiones externas (Expo Go)
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Servidor listo en puerto ${PORT}`);
 });

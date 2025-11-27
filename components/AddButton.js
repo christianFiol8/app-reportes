@@ -3,7 +3,7 @@ import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 
 const AddButton = ({ onPress }) => {
   const handlePress = () => {
-    // console.log('Botón + presionado');
+
     if (onPress) {
       onPress();
     } else {
@@ -23,7 +23,7 @@ const AddButton = ({ onPress }) => {
 
 const styles = StyleSheet.create({
   addButton: {
-    backgroundColor: '#1e88e5', // Color de acento
+    backgroundColor: '#1e88e5',
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 22,
     fontWeight: 'bold',
-    lineHeight: 25, // Ajuste para centrado vertical en React Native
+    lineHeight: 25,
   },
 });
 

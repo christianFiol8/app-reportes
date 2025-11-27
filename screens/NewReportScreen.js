@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Image, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import * as Location from 'expo-location'; // <--- Importamos Location
+import * as Location from 'expo-location';
 
 const NewReportScreen = ({ onBack, onAddReport }) => {
   const [title, setTitle] = useState('');
   const [problem, setProblem] = useState('');
   const [imageUrl, setImageUrl] = useState(null);
-  const [location, setLocation] = useState(''); // Lo dejamos vacío al inicio
+  const [location, setLocation] = useState(''); 
   const [isSending, setIsSending] = useState(false);
-  const [loadingLocation, setLoadingLocation] = useState(false); // Nuevo estado para carga de GPS
+  const [loadingLocation, setLoadingLocation] = useState(false);
 
-  // --- LÓGICA DE FOTOS (IGUAL QUE ANTES) ---
+  
   const pickImage = async () => {
     Alert.alert(
       "Subir Foto",
@@ -55,13 +55,12 @@ const NewReportScreen = ({ onBack, onAddReport }) => {
     }
   };
 
-  // --- LÓGICA DE UBICACIÓN REAL (NUEVO) ---
+ 
   const handleGetLocation = async () => {
     setLoadingLocation(true);
     setLocation('Solicitando permiso...');
 
     try {
-      // 1. Pedir permiso
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert('Permiso denegado', 'Necesitamos acceso a tu ubicación para agregarla al reporte.');
@@ -72,20 +71,14 @@ const NewReportScreen = ({ onBack, onAddReport }) => {
 
       setLocation('Obteniendo coordenadas...');
 
-      // 2. Obtener Latitud y Longitud
       let userLocation = await Location.getCurrentPositionAsync({});
       const { latitude, longitude } = userLocation.coords;
 
-      // 3. Convertir coordenadas a Dirección (Geocoding)
       let addressResponse = await Location.reverseGeocodeAsync({ latitude, longitude });
 
       if (addressResponse.length > 0) {
         const addr = addressResponse[0];
-        // Construimos una dirección legible
-        // Ejemplo: "Calle Reforma 123, Centro"
         const formattedAddress = `${addr.street || ''} ${addr.streetNumber || ''}, ${addr.city || ''}, ${addr.region || ''}`;
-        
-        // Limpiamos comas extra si faltan datos
         const cleanAddress = formattedAddress.replace(/, ,/g, ',').trim(); 
         setLocation(cleanAddress || `Lat: ${latitude}, Lon: ${longitude}`);
       } else {
@@ -99,15 +92,11 @@ const NewReportScreen = ({ onBack, onAddReport }) => {
       setLoadingLocation(false);
     }
   };
-
-  // --- ENVIAR REPORTE ---
   const handleSubmit = () => {
     if (!title.trim() || !problem.trim()) {
       Alert.alert('Faltan datos', 'Por favor, completa el título y la descripción.');
       return;
     }
-    
-    // Validación opcional: Obligar a tener ubicación
     if (!location || location === 'Permiso denegado') {
         Alert.alert('Falta ubicación', 'Por favor obten tu ubicación actual.');
         return;
