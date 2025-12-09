@@ -1,5 +1,4 @@
-// api.js
-const API_URL = 'http://192.168.1.82:3000'; 
+const API_URL = 'http://192.168.1.73:3000';
 
 export const loginUser = async (email, password) => {
     const response = await fetch(`${API_URL}/auth/login`, {
@@ -7,6 +6,7 @@ export const loginUser = async (email, password) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
     });
+
     if (!response.ok) throw new Error('Error de Login');
     return await response.json();
 };
@@ -17,8 +17,9 @@ export const registerUser = async (name, email, password, city) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password, city })
     });
+
     if (!response.ok) throw new Error('Error de Registro');
-    return await response.json();
+    return await response.json(); // ← Ahora devuelve el usuario completo
 };
 
 export const getReports = async () => {
@@ -37,6 +38,7 @@ export const createReport = async (reportData) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reportData)
     });
+
     if (!response.ok) throw new Error('Error al enviar reporte');
     return await response.json();
 };

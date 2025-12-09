@@ -6,7 +6,6 @@ import AuthScreen from './screens/AuthScreen';
 import HomeScreen from './screens/HomeScreen';
 import NewReportScreen from './screens/NewReportScreen';
 
-
 import { loginUser, registerUser, getReports, createReport } from './components/api';
 
 export default function App() {
@@ -15,11 +14,9 @@ export default function App() {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  
   useEffect(() => {
     setTimeout(() => setCurrentScreen('auth'), 2000);
   }, []);
-
 
   const refreshReports = async () => {
     const data = await getReports();
@@ -43,14 +40,13 @@ export default function App() {
   const handleRegister = async (name, email, password, city) => {
     setLoading(true);
     try {
-      await registerUser(name, email, password, city);
-      // Auto-login tras registro
-      const userData = await loginUser(email, password);
-      setUser(userData);
+      // REGISTRO SIN AUTO-LOGIN → YA NO CREA ERROR
+      const userData = await registerUser(name, email, password, city);
+      setUser(userData); 
       await refreshReports();
       setCurrentScreen('home');
     } catch (error) {
-      Alert.alert('Error', error.message || error.toString());
+      Alert.alert('Error', error.message || "Error al registrar");
     } finally {
       setLoading(false);
     }
@@ -69,22 +65,32 @@ export default function App() {
     }
   };
 
-
   const renderScreen = () => {
-    if (loading) return <View style={{flex:1, justifyContent:'center'}}><ActivityIndicator size="large" color="#1e88e5"/></View>;
+    if (loading)
+      return (
+        <View style={{ flex: 1, justifyContent: 'center' }}>
+          <ActivityIndicator size="large" color="#1e88e5" />
+        </View>
+      );
 
     switch (currentScreen) {
-      case 'splash': return <SplashScreen />;
-      case 'auth': return <AuthScreen onLogin={handleLogin} onRegister={handleRegister} />;
-      case 'home': 
-        return <HomeScreen 
-            reports={reports} 
+      case 'splash':
+        return <SplashScreen />;
+      case 'auth':
+        return <AuthScreen onLogin={handleLogin} onRegister={handleRegister} />;
+      case 'home':
+        return (
+          <HomeScreen
+            reports={reports}
             onAddReport={() => setCurrentScreen('newReport')}
-            onLogout={() => { setUser(null); setCurrentScreen('auth'); }}
-        />;
-      case 'newReport': 
+            onLogout={() => {
+              setUser(null);
+              setCurrentScreen('auth');
+            }}
+          />
+        );
+      case 'newReport':
         return <NewReportScreen onBack={() => setCurrentScreen('home')} onAddReport={handleCreateReport} />;
-      default: return <SplashScreen />;
     }
   };
 

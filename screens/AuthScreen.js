@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 
-
 const AuthScreen = ({ onLogin, onRegister }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
@@ -14,7 +13,8 @@ const AuthScreen = ({ onLogin, onRegister }) => {
       if (!email || !password) return Alert.alert('Error', 'Faltan campos');
       onLogin(email, password);
     } else {
-      if (!name || !email || !password || !city) return Alert.alert('Error', 'Todos los campos son obligatorios');
+      if (!name || !email || !password || !city)
+        return Alert.alert('Error', 'Todos los campos son obligatorios');
       onRegister(name, email, password, city);
     }
   };
